@@ -10,7 +10,6 @@ import pl.wblonski.patterns.observer.util.MyLogger;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,125 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     Mimo to trzeba je uwzględnić w kodzie.
  */
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
-public class ObserverSimpleUnitTest {
-
-    private static final String NULL_OBSERVER_REGISTER_EX_MSG = "Próba rejestracji obserwatora \"null\". ";
-    private static final String TWICE_OBSERVER_REGISTER_EX_MSG = "Próba ponownej rejestracji już zarejestrowanego obserwatora.";
-    private static final String NULL_OBSERVER_UNREGISTER_EX_MSG = "Próba wyrejestrowania obserwatora \"null\".";
-    private static final String NOT_EXIST_OBSERVER_UNREGISTER_EX_MSG = "Próba wyrejestrowania niezarejestrowanego obserwatora.";
-
-    @Nested
-    @Order(10)
-    class ConcreteObserverTest {
-        @BeforeAll
-        static void logHeader() {
-            MyLogger.header(ConcreteObserverTest.class.getSimpleName());
-        }
-
-        @Test
-        void fieldSubjectRefIsSet_WhenMethodSetSubjectRefIsCalled() {
-            // given
-            ConcreteSubject aShop = new ConcreteSubject("Any Shop");
-            Observer anObserver = new ConcreteObserver("John Wayne");
-            try {
-                // when
-                anObserver.setSubjectRef(aShop);
-                // then
-                try {
-                    // sprawdź, czy metoda setSubjectRef() zmieniła prywatne pole w obiekcie anObserver
-                    Class<ConcreteObserver> observerClass = ConcreteObserver.class;
-                    Field field = observerClass.getDeclaredField("subjectRef");
-                    field.setAccessible(true);
-                    Subject subiect = (Subject) field.get(anObserver);
-                    assertEquals(aShop, subiect);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            } catch (RuntimeException ex) {
-                Assertions.fail(ex.getCause().getMessage() + ":%n " + ex.getMessage());
-            }
-        }
-
-        @Test
-        void myUpdateMethodExecutedBusinessAction_WhenSubjectStateIsInteresting()  {
-            // given
-            ConcreteSubject aShop = new ConcreteSubject("Big Shop");
-            Observer anObserver = new ConcreteObserver("Józef Stolarz");
-            // when
-            try {
-                aShop.registerObserver(anObserver);
-                // sprawdź, czy wykonała się akcja biznesowa w metodzie myUpdate() obserwatora
-                Class<ConcreteObserver> observerClass = ConcreteObserver.class;
-                Method myUpadateMethod = observerClass.getDeclaredMethod("myUpdate");
-                myUpadateMethod.setAccessible(true);
-                Boolean isExecuted = (Boolean) myUpadateMethod.invoke(anObserver);
-                // then
-                Assertions.assertEquals(true, isExecuted);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException |
-                    TwiceObserverRegistrationException | NullObserverRegistrationException |
-                    RuntimeException e) {
-                Assertions.fail(e.getMessage());
-            }
-        }
-        @Test
-        void myUpdateMethodNotExecutedBusinessAction_WhenSubjectStateIsNotInteresting()  {
-            // given
-            ConcreteSubject aShop = new ConcreteSubject("Big Shop");
-            Observer anObserver = new ConcreteObserver("Stanisław Kowal");
-            // when
-            try {
-                aShop.registerObserver(anObserver);
-                anObserver.setSubjectRef(aShop);
-
-                Class[] methodParamsTypes;
-                // uwtwórz obiekt innej promocji
-                Class<ConcreteSubject> claz = ConcreteSubject.class;
-                methodParamsTypes = new Class[]{String.class, String.class, Integer.class, LocalDate.class};
-                Method method = claz.getDeclaredMethod("createNewSpecialOffer", methodParamsTypes);
-                method.setAccessible(true);
-                State otherOfferObj = (State) method.invoke(aShop, "Big Shop", "Scutter", 2000, LocalDate.now());
-
-//                // ustaw nową promocję w Podmiocie
-                methodParamsTypes = new Class[]{State.class};
-                Method changeStateMethod = claz.getDeclaredMethod("changeCurrentSpecialOffer", methodParamsTypes);
-                changeStateMethod.setAccessible(true);
-                changeStateMethod.invoke(aShop, otherOfferObj);
-
-                // pobierz nową promocję do obserwatora
-                Class<ConcreteObserver> observerClass = ConcreteObserver.class;
-                methodParamsTypes = new Class[]{State.class};
-                Method mySetStateCopy = observerClass.getDeclaredMethod("setMySubjectStateCopy", methodParamsTypes);
-                mySetStateCopy.setAccessible(true);
-                mySetStateCopy.invoke(anObserver, otherOfferObj);
-
-                // sprawdź, czy wykonała się akcja biznesowa w metodzie myUpdate() obserwatora
-                Method myUpdateMethod = observerClass.getDeclaredMethod("myUpdate");
-                myUpdateMethod.setAccessible(true);
-                Boolean isExecuted = (Boolean) myUpdateMethod.invoke(anObserver);
-                // then
-                Assertions.assertEquals(false, isExecuted);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException |
-                     TwiceObserverRegistrationException | NullObserverRegistrationException |
-                     RuntimeException e) {
-                Assertions.fail();
-            }
-        }
-        @Test
-        void updateWorksOK_WhenMyUpdateFailed() {
-            // given
-            Observer anObserver = new ConcreteObserver("Tom Smith");
-            // when
-            // null spowoduje błąd w metodzie prywatnej myUpdate()
-            anObserver.setSubjectRef(null);
-            try {
-                anObserver.update();
-                // then
-                // OK
-            } catch (RuntimeException e) {
-                Assertions.fail();
-            }
-        }
-    }
+public class ConcreteSubjectTest {
 
     @Nested
     @Order(20)
@@ -242,6 +123,12 @@ public class ObserverSimpleUnitTest {
     @Nested
     @Order(30)
     class ConcreteSubjectNegativePathTest {
+
+        private static final String NULL_OBSERVER_REGISTER_EX_MSG = "Próba rejestracji obserwatora \"null\". ";
+        private static final String TWICE_OBSERVER_REGISTER_EX_MSG = "Próba ponownej rejestracji już zarejestrowanego obserwatora.";
+        private static final String NULL_OBSERVER_UNREGISTER_EX_MSG = "Próba wyrejestrowania obserwatora \"null\".";
+        private static final String NOT_EXIST_OBSERVER_UNREGISTER_EX_MSG = "Próba wyrejestrowania niezarejestrowanego obserwatora.";
+
         @BeforeAll
         static void logHeader() {
             MyLogger.header(ConcreteSubjectNegativePathTest.class.getSimpleName());

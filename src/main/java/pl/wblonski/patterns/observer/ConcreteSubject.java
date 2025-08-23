@@ -16,7 +16,7 @@ public class ConcreteSubject implements Subject {
 
     public ConcreteSubject(String subjectName) {
         this.subjectName = subjectName;
-        changeCurrentSpecialOffer(new MyState(subjectName, "Bicycle", 1000, LocalDate.now().plusDays(7)));
+        currentSpecialOffer = new MyState(this.subjectName, "Bicycle", 1000, LocalDate.now().plusDays(7));
     }
 
     @Override
@@ -45,6 +45,10 @@ public class ConcreteSubject implements Subject {
     @Override
     public State getCurrentState() {
         return currentSpecialOffer;
+    }
+
+    private void setCurrentSpecialOffer(State currentSpecialOffer) {
+        this.currentSpecialOffer = currentSpecialOffer;
     }
 
     public void notifyObservers() {

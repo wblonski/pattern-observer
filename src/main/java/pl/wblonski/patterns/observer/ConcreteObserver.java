@@ -37,6 +37,7 @@ public class ConcreteObserver implements Observer {
     public void update() {
         try {
             MyLogger.trace(format("Update is starting for %s.", name));
+            setMySubjectStateCopy(this.subjectRef.getCurrentState());
             myUpdate();
         } catch (Exception ex) {
 
@@ -54,11 +55,10 @@ public class ConcreteObserver implements Observer {
     private Boolean myUpdate() throws MyUpdateFailedException {
         MyLogger.trace(format("My name is %s. myUpdate is starting now:", name));
         try {
-            setMySubjectStateCopy(this.subjectRef.getCurrentState());
-
             // jeśli obiektem promocji jest rower, to zareaguj entuzjastycznie
             // w przeciwnym razie zignoruj powiadomienie
             if (this.mySubjectStateCopy.productName().equals("Bicycle")) {
+                MyLogger.trace("The offer is interesting for me, then my business action is running.");
                 MyLogger.trace(format("- Great, bike is the special offer at \"%s\" today for the price $%s only, expired on %s.",
                         this.mySubjectStateCopy.subjectName(), this.mySubjectStateCopy.tariff(),
                         this.mySubjectStateCopy.expirationDate()));
